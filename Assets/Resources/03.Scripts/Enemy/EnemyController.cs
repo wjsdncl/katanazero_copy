@@ -21,6 +21,8 @@ public class EnemyController : MonoBehaviour
     private void Update()
     {
         Move();
+        FindTarget();
+        FollowTarget();
     }
 
 
@@ -28,6 +30,7 @@ public class EnemyController : MonoBehaviour
 
     public GameObject enemy = null;
     [HideInInspector] public Rigidbody2D rb2d = null;
+    private BoxCollider2D bc2d = null;
 
 
 
@@ -49,7 +52,19 @@ public class EnemyController : MonoBehaviour
     [SerializeField] float direction = 1;
     [Space(8f)]
 
+
+
+
+    [Header("Target")]
+
+    [SerializeField] Transform eye = null;
+    [SerializeField] Vector2 boxSize;
+    public LayerMask targetLayer;
     [SerializeField] GameObject target = null;
+    [SerializeField] bool isFollow = false;
+
+
+
 
     [Header("Attack")]
 
@@ -73,13 +88,14 @@ public class EnemyController : MonoBehaviour
     private void GetComponent()
     {
         rb2d = enemy.GetComponent<Rigidbody2D>();
+        bc2d = enemy.GetComponent<BoxCollider2D>();
     }
 
 
 
     private void Move()
     {
-        if(moveMin != Vector2.zero && moveMin != Vector2.zero)
+        if(moveMin != Vector2.zero && moveMin != Vector2.zero && !isFollow)
         {
 
             rb2d.AddForce(Vector2.right * direction, ForceMode2D.Impulse);
@@ -90,7 +106,6 @@ public class EnemyController : MonoBehaviour
             if (rb2d.velocity.x > speed)
             {
                 rb2d.velocity = new Vector2(speed, rb2d.velocity.y);
-
             }
             // 왼쪽으로 이동
             else if (rb2d.velocity.x < speed * (-1))
@@ -100,23 +115,65 @@ public class EnemyController : MonoBehaviour
 
             if(nowPos.x > moveMax.x && direction > 0)
             {
-                Debug.Log("max");
                 Flip();
             }
             else if(nowPos.x < moveMin.x && direction < 0)
             {
-                Debug.Log("min");
                 Flip();
             }
         }
     }
 
 
+    private void FindTarget()
+    {
+        if(target == null)
+        {
+            Collider2D hit = Physics2D.OverlapBox(eye.position, boxSize, 0, targetLayer);
+            
+            if(hit != null)
+            {
+                Debug.Log(hit.name);
+                target = hit.gameObject;
+            }
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireCube(eye.position, boxSize);
+    }
+
     private void FollowTarget()
     {
         if(target != null)
         {
+            isFollow = true;
 
+            rb2d.AddForce(Vector2.right * direction, ForceMode2D.Impulse);
+
+            float h = 1;
+
+            if(target.transform.position.x > enemy.transform.position.x)
+            {
+                rb2d.velocity = new Vector2(speed, rb2d.velocity.y);
+                h = 1;
+            }
+            else if(target.transform.position.x < enemy.transform.position.x)
+            {
+                rb2d.velocity = new Vector2(speed * (-1), rb2d.velocity.y);
+                h = -1;
+            }
+            
+            if ((h > 0 && direction < 0) || (h < 0 && direction > 0))
+            {
+                Flip();
+            }
+        }
+        else
+        {
+            isFollow = false;
         }
     }
 
@@ -134,7 +191,16 @@ public class EnemyController : MonoBehaviour
 
     private void Attack()
     {
+        if(isAttack)
+        {
+            bc2d.enabled = true;
 
+        }
+        else
+        {  
+            bc2d.enabled = false;
+
+        }
     }
 
 

@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour
 
     public static PlayerController ins = null;
 
-
+    
 
     private void Awake()
     {
