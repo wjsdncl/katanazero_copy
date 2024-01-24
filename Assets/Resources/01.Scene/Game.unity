@@ -6183,12 +6183,12 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 1.5
   m_LinearDrag: 0
-  m_AngularDrag: 0.05
-  m_GravityScale: 7
+  m_AngularDrag: 0
+  m_GravityScale: 4
   m_Material: {fileID: 6200000, guid: c4f521cde3f3aac419d5d43cc73e08b7, type: 2}
-  m_Interpolate: 0
+  m_Interpolate: 2
   m_SleepingMode: 0
   m_CollisionDetection: 1
   m_Constraints: 4
@@ -6294,7 +6294,7 @@ MonoBehaviour:
   groundLM:
     serializedVersion: 2
     m_Bits: 512
-  power: 15
+  power: 20
   footPos: {fileID: 1731142291}
   isWall: 0
   isWallSliding: 0
@@ -6302,8 +6302,8 @@ MonoBehaviour:
   wallStopTimer: 0.3
   wallSlidigSpeed: 0.85
   isDodge: 0
-  dodgeSpeed: 8
-  attack: 26
+  dodgeSpeed: 50
+  attack: 28
   cooltime: 0.18
   curtime: 0
   isAttack: 0
@@ -6518,7 +6518,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1731142290}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.24, z: 0}
+  m_LocalPosition: {x: 0, y: -0.09, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1511135096}
@@ -7070,7 +7070,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 123937014546900286}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 10, y: -3.5, z: 0}
+  m_LocalPosition: {x: 30, y: -3.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1299111995}
@@ -7113,7 +7113,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemy: {fileID: 123937014546900286}
   rb2d: {fileID: 0}
-  speed: 10
+  speed: 6
   firPos: {x: 0, y: 0}
   nowPos: {x: 0, y: 0}
   moveMin: {x: -5, y: 0}

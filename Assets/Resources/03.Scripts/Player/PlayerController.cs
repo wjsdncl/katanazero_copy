@@ -200,6 +200,9 @@ public class PlayerController : MonoBehaviour
         if (isAttack)
             return;
 
+        if (isDodge)
+            return;
+
 
         if (Input.GetButton("Horizontal"))
         {
@@ -396,15 +399,18 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void PlayerDodge()
     {
-        if (Input.GetButtonDown("Vertical"))
+        
+
+        if (Input.GetButtonDown("Vertical") && isMove)
         {
             if (!isDodge)
             {
                 if (isGround)
                 {
                     isDodge = true;
-                    dodgeSpeed = 50f;
+                    dodgeSpeed = 30f;
                     state = State.Dodge;
+                    
                 }
             }
         }
@@ -412,16 +418,21 @@ public class PlayerController : MonoBehaviour
         if (isDodge)
         {
             isDontMove = true;
+            attack_particle_obj.SetActive(true);
+            attack_particle.startLifetime = 0.13f;
+
 
             float speedDrop = 10f;
             dodgeSpeed -= dodgeSpeed * speedDrop * Time.deltaTime;
 
-            float minSpeed = 5f;
+            float minSpeed = 3f;
+
 
             if (dodgeSpeed < minSpeed)
             {
                 isDodge = false;
                 state = State.Normal;
+                attack_particle.startLifetime = 0f;
             }
             rb2d.velocity = Vector2.right * playerDir * dodgeSpeed;
 
@@ -454,8 +465,10 @@ public class PlayerController : MonoBehaviour
 
             if (Input.GetMouseButtonDown(0))
             {
-                if (!isDodge)
-                {
+                dodgeSpeed = 0;
+                isDodge = false;
+                state = State.Normal;
+                
                     state = State.Attack;
                     attack_guide.SetActive(true);
 
@@ -466,6 +479,7 @@ public class PlayerController : MonoBehaviour
 
                     isAttack = true;
 
+                    // 게속해서 높이 올라가지 않게 설정
                     if (isFirstAtk)
                     {
                         atk_dis_y = 1.5f;
@@ -474,12 +488,12 @@ public class PlayerController : MonoBehaviour
                     }
                     else
                     {
-                        atk_dis_y = 0.4f;
+                        atk_dis_y = 0.3f;
                     }
 
                     // attack_guide의 앞으로 공격 
                     rb2d.AddForce(attack_guide.transform.right * attack, ForceMode2D.Impulse);
-                }
+                
             }
 
         }
@@ -555,7 +569,7 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void AttackParticle()
     {
-        if (isAttack)
+        if (isAttack || isDodge)
         {
             attack_particle_obj.SetActive(true);
             attack_particle.startLifetime = 0.13f;
@@ -568,9 +582,10 @@ public class PlayerController : MonoBehaviour
 
 
 
-
-
-
+    
+    /// <summary>
+    /// 플레이어 공격받을 때
+    /// </summary>
     private void PlayerHit()
     {
         switch(state)
