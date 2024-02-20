@@ -6512,11 +6512,11 @@ MonoBehaviour:
   isGround: 0
   isFallingStop: 0
   isJump: 0
-  groundChkRadius: 0.5
+  groundChkRadius: 0.3
   groundChkBox: {x: 0.99, y: 0.03}
   groundLM:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 512
   power: 20
   footPos: {fileID: 1731142291}
   isWall: 0
@@ -6850,7 +6850,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1731142290}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.52, z: 0}
+  m_LocalPosition: {x: 0, y: -0.3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1511135096}

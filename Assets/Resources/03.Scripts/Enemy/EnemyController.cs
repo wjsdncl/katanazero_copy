@@ -203,9 +203,9 @@ public class EnemyController : MonoBehaviour
         }
     }
 
-    private void Dead()
+    public void Dead()
     {
-
+        this.gameObject.SetActive(false);
     }
 
 
@@ -221,7 +221,17 @@ public class EnemyController : MonoBehaviour
     {
         if(other.gameObject.tag == Tag.Player.ToString())
         {
-            other.gameObject.SendMessage("PlayerHit");
+            string state = other.gameObject.GetComponent<PlayerController>().state.ToString();
+            
+            if (state == "Attack")
+            {
+                Dead();
+            }
+            else
+                other.gameObject.SendMessage("PlayerHit");
+            
+
+
         }
     }
 

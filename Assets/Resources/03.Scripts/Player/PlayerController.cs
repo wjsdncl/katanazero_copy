@@ -30,6 +30,8 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        PlayerKeyInput();
+
         PlayerMoveInput();
         
 
@@ -45,8 +47,6 @@ public class PlayerController : MonoBehaviour
         PlayerAttackInput();
         AttackParticle();
 
-        BulletTime();
-
         
     }
 
@@ -58,6 +58,8 @@ public class PlayerController : MonoBehaviour
 
         GronudRay();
 
+        BulletTime();
+
     }
 
     
@@ -68,9 +70,9 @@ public class PlayerController : MonoBehaviour
     [HideInInspector] public Rigidbody2D rb2d = null;                       // 플레이어 Rigidbody2D
     private BoxCollider2D boxCollider2D = null;
 
-    private enum State { Normal, Dodge, Attack,}
+    public enum State { Normal, Dodge, Attack, }                             // 플레이어의 현재 상태 [ Normal = 아무것도 하지 않을 때 | Dodge = 회피를 사용할 때 | Attack = 공격할 때 ]
     [Space(8f)]
-    [SerializeField] State state;
+    public State state;
 
 
 
@@ -91,7 +93,7 @@ public class PlayerController : MonoBehaviour
     [Space(8f)]
 
     [SerializeField] float groundChkRadius = 0f;                            // 바닥 확인용 반지름
-    [SerializeField] Vector2 groundChkBox;                               // 바닥 확인용 박스
+    [SerializeField] Vector2 groundChkBox;                                  // 바닥 확인용 박스
     [SerializeField] LayerMask groundLM;                                    // 바닥 확인용 레이어 마스크
     [SerializeField] float power = 0f;                                      // 점프파워
     [Space(8f)]
@@ -144,6 +146,10 @@ public class PlayerController : MonoBehaviour
     private ParticleSystem.MainModule attack_particle;
 
 
+    [Space(8f)]
+    [SerializeField] bool isTimeSlow = false;                               // 불릿타임 적용 여부
+
+
 
     /// <summary>
     /// 컴포넌트 받아오기
@@ -176,8 +182,8 @@ public class PlayerController : MonoBehaviour
     private void GronudRay()
     {
         // 플레이어의 발 위치에 원을 생성, 원이 바닥에 닿아있으면 isGround = true 그렇지 않으면 isGround = false
-        isGround = Physics2D.OverlapBox(footPos.position, groundChkBox, groundLM);
-        Debug.Log(Physics2D.OverlapBox(footPos.position, groundChkBox, groundLM) + "        ##!@!@!#$!$");
+        isGround = Physics2D.OverlapCircle(footPos.position, groundChkRadius, groundLM);
+
 
         if (isGround && !isAttack)
         {
@@ -186,7 +192,6 @@ public class PlayerController : MonoBehaviour
 
         if(isGround && !isFallingStop && !isAttack)
         {
-            Debug.Log("         스탑했다         ");
             isFallingStop = true;
             rb2d.velocity = new Vector2(rb2d.velocity.x, 0);
         }
@@ -203,7 +208,17 @@ public class PlayerController : MonoBehaviour
     {
         // 바닥을 확인하는 원 생성
         Gizmos.color = Color.blue;
-        Gizmos.DrawCube(footPos.position, groundChkBox);
+        Gizmos.DrawWireSphere(footPos.position, groundChkRadius);
+
+    }
+
+    private void PlayerKeyInput()
+    {
+        //불릿타임 키 입력
+        if (Input.GetKey(KeyCode.LeftShift))
+            isTimeSlow = true;
+        if (Input.GetKeyUp(KeyCode.LeftShift))
+            isTimeSlow = false;
 
     }
 
@@ -292,7 +307,6 @@ public class PlayerController : MonoBehaviour
         if (!isAttack && isGround && !isMove && !isDodge)
         {
             rb2d.velocity = new Vector2(rb2d.velocity.normalized.x * 0f, rb2d.velocity.y);
-            //Debug.Log("[ SUCCESS ]    attack : " + isAttack + "    |      ground : " + isGround + "    |      move : " + isMove);
         }
     }
 
@@ -641,7 +655,11 @@ public class PlayerController : MonoBehaviour
             break;
 
             case State.Attack:
-                Debug.Log("공격");
+                {
+                    Debug.Log("공격");
+                    
+
+                }
             break;
         }
     }
@@ -654,21 +672,21 @@ public class PlayerController : MonoBehaviour
 
     private void BulletTime()
     {
-        if (Input.GetKey(KeyCode.LeftShift))
+        if (isTimeSlow)
         {
             Time.timeScale = 0.5f;
 
-
-            Debug.Log("Success :  Bullet Time On   ");
+            //Debug.Log("Success :  Bullet Time On   ");
         }
-
-        if (Input.GetKeyUp(KeyCode.LeftShift))
+        else
         {
             Time.timeScale = 1f;
 
-            Debug.Log("Success :  Bullet Time Off   ");
+            //Debug.Log("Success :  Bullet Time Off   ");
         }
     }
+
+
 
 
 
