@@ -30,7 +30,8 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        PlyerMove();
+        PlayerMoveInput();
+        
 
         PlayerJump();
 
@@ -41,17 +42,25 @@ public class PlayerController : MonoBehaviour
 
         PlayerStop();
 
-        PlayerAttack();
+        PlayerAttackInput();
         AttackParticle();
 
         BulletTime();
+
+        
     }
 
     private void FixedUpdate()
     {
+        PlayerMove();
+        
+        PlayerAttack();
+
         GronudRay();
+
     }
 
+    
 
 
     [Header("Player")]
@@ -77,12 +86,14 @@ public class PlayerController : MonoBehaviour
 
     [Header("Jump")]
     [SerializeField] bool isGround = false;                                 // 바닥 확인
+    [SerializeField] bool isFallingStop;
     [SerializeField] bool isJump = false;                                   // 플레이어가 점프중인지 확인
     [Space(8f)]
 
     [SerializeField] float groundChkRadius = 0f;                            // 바닥 확인용 반지름
+    [SerializeField] Vector2 groundChkBox;                               // 바닥 확인용 박스
     [SerializeField] LayerMask groundLM;                                    // 바닥 확인용 레이어 마스크
-    [SerializeField] float power = 15f;                                     // 점프파워
+    [SerializeField] float power = 0f;                                      // 점프파워
     [Space(8f)]
 
     [SerializeField] Transform footPos;                                     // 발의 위치
@@ -165,12 +176,22 @@ public class PlayerController : MonoBehaviour
     private void GronudRay()
     {
         // 플레이어의 발 위치에 원을 생성, 원이 바닥에 닿아있으면 isGround = true 그렇지 않으면 isGround = false
-        isGround = Physics2D.OverlapCircle(footPos.position, groundChkRadius, groundLM);
+        isGround = Physics2D.OverlapBox(footPos.position, groundChkBox, groundLM);
+        Debug.Log(Physics2D.OverlapBox(footPos.position, groundChkBox, groundLM) + "        ##!@!@!#$!$");
 
         if (isGround && !isAttack)
         {
             isFirstAtk = true;
         }
+
+        if(isGround && !isFallingStop && !isAttack)
+        {
+            Debug.Log("         스탑했다         ");
+            isFallingStop = true;
+            rb2d.velocity = new Vector2(rb2d.velocity.x, 0);
+        }
+        if(!isGround)
+            isFallingStop = false;
 
     }
 
@@ -182,7 +203,7 @@ public class PlayerController : MonoBehaviour
     {
         // 바닥을 확인하는 원 생성
         Gizmos.color = Color.blue;
-        Gizmos.DrawSphere(footPos.position, groundChkRadius);
+        Gizmos.DrawCube(footPos.position, groundChkBox);
 
     }
 
@@ -192,7 +213,7 @@ public class PlayerController : MonoBehaviour
     /// <summary>
     /// 플레이어 이동
     /// </summary>
-    public void PlyerMove()
+    public void PlayerMove()
     {
         if (isDontMove)
             return;
@@ -203,10 +224,8 @@ public class PlayerController : MonoBehaviour
         if (isDodge)
             return;
 
-
-        if (Input.GetButton("Horizontal"))
+        if(isMove)
         {
-            isMove = true;
             float h = Input.GetAxisRaw("Horizontal");
 
 
@@ -226,14 +245,29 @@ public class PlayerController : MonoBehaviour
             {
                 rb2d.velocity = new Vector2(speed * (-1), rb2d.velocity.y);
             }
-
         }
+        else
+            rb2d.velocity = new Vector2(rb2d.velocity.normalized.x * 0f, rb2d.velocity.y);
+    }
+
+    public void PlayerMoveInput()
+    {
+        
+        if (isDontMove)
+            return;
+
+        if (isAttack)
+            return;
+
+        if (isDodge)
+            return;
+
+
+        if (Input.GetButton("Horizontal"))
+            isMove = true;
         // 이동 종료, 점프중 이라면 작동 안함
         if (Input.GetButtonUp("Horizontal"))
-        {
-            rb2d.velocity = new Vector2(rb2d.velocity.normalized.x * 0f, rb2d.velocity.y);
             isMove = false;
-        }
     }
 
 
@@ -258,7 +292,7 @@ public class PlayerController : MonoBehaviour
         if (!isAttack && isGround && !isMove && !isDodge)
         {
             rb2d.velocity = new Vector2(rb2d.velocity.normalized.x * 0f, rb2d.velocity.y);
-            // Debug.Log("[ SUCCESS ]    " + isAttack + "  " + isGround + "  " + isMove);
+            //Debug.Log("[ SUCCESS ]    attack : " + isAttack + "    |      ground : " + isGround + "    |      move : " + isMove);
         }
     }
 
@@ -365,7 +399,7 @@ public class PlayerController : MonoBehaviour
 
                 rb2d.constraints = RigidbodyConstraints2D.FreezeRotation;
 
-                rb2d.velocity = new Vector2(-playerDir * power, 1f * power);
+                rb2d.velocity = new Vector2(-playerDir * (power - 5), 1f * (power - 5));
                 PlayerFlip();
 
             }
@@ -442,14 +476,8 @@ public class PlayerController : MonoBehaviour
     }
 
 
-
-
-
-
-    /// <summary>
-    /// 플레이어 공격
-    /// </summary>
-    public void PlayerAttack()
+    bool isAttackBtn;
+    public void PlayerAttackInput()
     {
         if (!isAttack)
         {
@@ -467,39 +495,53 @@ public class PlayerController : MonoBehaviour
             {
                 dodgeSpeed = 0;
                 isDodge = false;
-                state = State.Normal;
-                
-                    state = State.Attack;
-                    attack_guide.SetActive(true);
+                state = State.Attack;
+                attack_guide.SetActive(true);
 
-                    atk_dis_chk = transform.position;
-                    axp = true; axm = true; ayp = true; aym = true;
+                atk_dis_chk = transform.position;
+                axp = true; axm = true; ayp = true; aym = true;
 
-                    StartCoroutine("AttackCoolTime");
+                StartCoroutine("AttackCoolTime");
 
-                    isAttack = true;
 
-                    // 게속해서 높이 올라가지 않게 설정
-                    if (isFirstAtk)
-                    {
-                        atk_dis_y = 1.5f;
-                        rb2d.velocity = Vector2.zero;
-                        isFirstAtk = false;
-                    }
-                    else
-                    {
-                        atk_dis_y = 0.3f;
-                    }
+                // 게속해서 높이 올라가지 않게 설정
+                if (isFirstAtk)
+                {
+                    atk_dis_y = 1.5f;
+                    rb2d.velocity = Vector2.zero;
+                    isFirstAtk = false;
+                }
+                else
+                {
+                    atk_dis_y = 0.3f;
+                }
 
-                    // attack_guide의 앞으로 공격 
-                    rb2d.AddForce(attack_guide.transform.right * attack, ForceMode2D.Impulse);
-                
+                isAttack = true;
+                isAttackBtn = true;
+
             }
-
         }
 
         AttackDistance();
     }
+
+
+
+    /// <summary>
+    /// 플레이어 공격
+    /// </summary>
+    public void PlayerAttack()
+    {
+
+        // attack_guide의 앞으로 공격 
+        if(isAttackBtn)
+        {
+            isAttackBtn = false;
+            rb2d.AddForce(attack_guide.transform.right * attack, ForceMode2D.Impulse);
+        }
+        
+    }
+    
 
     // 공격 거리 제한
     private void AttackDistance()

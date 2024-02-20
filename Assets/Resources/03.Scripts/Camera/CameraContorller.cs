@@ -19,7 +19,7 @@ public class CameraContorller : MonoBehaviour
         ins = this;
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
         CameraMove();
     }
